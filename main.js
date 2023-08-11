@@ -1,49 +1,39 @@
-
-//função para abrir o modal 
+// Função para abrir o modal
 const abrirModal = () => 
-    //add - adicionar o modal
-    document.getElementById('modal').classList.add('active')
+    document.getElementById('modal').classList.add('active'); // Adiciona a classe 'active' para exibir o modal
 
-//função para fechar o modal
+// Função para fechar o modal
 const fecharModal = () => {
-    clearFields()//função para os campos do modal
-    //remove - fechar o modal
-    document.getElementById('modal').classList.remove('active')
+    clearFields(); // Limpa os campos do modal
+    document.getElementById('modal').classList.remove('active'); // Remove a classe 'active' para esconder o modal
 }
 
-//guardar os itens - clientes - setItem
-//exemplo: localStorage.setItem("nome","Henrique");
-const setLocalStorage = (dbCliente) => //objeto a ser armazenado
-    //O JSON.stringify() método converte um valor em uma string JSON
-    //nome da chave do objeto db_client
-    localStorage.setItem("db_cliente",JSON.stringify(dbCliente))
+// Função para armazenar os itens de clientes no Local Storage
+const setLocalStorage = (dbCliente) => 
+    localStorage.setItem("db_cliente", JSON.stringify(dbCliente)); // Converte o objeto em string JSON e armazena no Local Storage
 
-//puxar os itens - clientes 
-//exemplo: let cliente = localStorage.getItem("nome");
-//console.log("Meu nome é: ",cliente)
+// Função para obter os itens de clientes do Local Storage
 const getLocalStorage = () => 
-//O JSON.parse()método que analisa uma string JSON, construindo um objeto
-    JSON.parse(localStorage.getItem('db_cliente')) ?? []
+    JSON.parse(localStorage.getItem('db_cliente')) ?? []; // Analisa a string JSON e retorna um objeto, ou um array vazio se não houver dados
 
-//CRUD - create
+// Função para criar um novo cliente
 const createCliente = (cliente) => {
     const dbCliente = getLocalStorage();
     dbCliente.push(cliente);
-    setLocalStorage(dbCliente); //devolve o array para o localStorage
+    setLocalStorage(dbCliente); // Atualiza o Local Storage com o novo cliente
 }
 
-//Interação com o layout
+// Função para limpar os campos do modal
 const clearFields = () => {
-    const fields = document.querySelectorAll('.modal-field')//inputs do modal
-    fields.forEach(field => field.value = "")//percorrer os valores informados 
-    //propriedade de acesso ao dado do elemento
-    document.getElementById('nome').dataset.index = 'new'
-    //mostrar no título do modal 
-    document.querySelector(".modal-header>h2").textContent  = 'Novo Cliente'
+    const fields = document.querySelectorAll('.modal-field'); // Seleciona os campos do modal
+    fields.forEach(field => field.value = ""); // Limpa os valores dos campos
+    document.getElementById('nome').dataset.index = 'new'; // Define o índice como 'new' para indicar um novo cliente
+    document.querySelector(".modal-header>h2").textContent  = 'Novo Cliente'; // Altera o título do modal
 }
 
-//função para verificar se deseja cadastrar ou editar
+// Função para salvar um cliente (cadastrar ou editar)
 const saveCliente = () => {
+    // Captura os dados do cliente do modal
     const cliente = {
         nome: document.getElementById('nome').value,
         email: document.getElementById('email').value,
@@ -53,35 +43,24 @@ const saveCliente = () => {
 
     const index = document.getElementById('nome').dataset.index;
 
-    const dbCliente = readCliente(); // Lê os clientes do Local Storage
-
-    // Verifica se já existe um cliente com o mesmo nome ou e-mail
-    const nomeRepetido = dbCliente.some(clienteExistente => clienteExistente.nome === cliente.nome && clienteExistente.index !== index);
-    const emailRepetido = dbCliente.some(clienteExistente => clienteExistente.email === cliente.email && clienteExistente.index !== index);
-
-    if (nomeRepetido) {
-        alert("Nome já está cadastrado em outro cliente.");
-        return;
-    }
-
-    if (emailRepetido) {
-        alert("E-mail já está cadastrado em outro cliente.");
-        return;
-    }
-
     if (index === 'new') {
         createCliente(cliente);
     } else {
         updateCliente(index, cliente);
     }
 
-    atualizaTabela();
-    fecharModal();
+    atualizaTabela(); // Atualiza a tabela na interface
+    fecharModal(); // Fecha o modal
 }
 
-//Mostrar na tabela 
-const criarLinha = (cliente, index) => {//método para criar uma linha na tabela 
-    const novaLinha = document.createElement('tr')//criar o elemento TR
+
+
+// Função para listar os clientes
+const readCliente = () => getLocalStorage();
+
+// Função para criar uma linha na tabela
+const criarLinha = (cliente, index) => {
+    const novaLinha = document.createElement('tr');
     novaLinha.innerHTML = `
         <td>${cliente.nome}</td>
         <td>${cliente.email}</td>
@@ -89,104 +68,93 @@ const criarLinha = (cliente, index) => {//método para criar uma linha na tabela
         <td>${cliente.cidade}</td>
         <td>
             <button type="button" class="button green" id="edit-${index}">Editar</button>
-            <button type="button" class="button red" id="delete-${index}" >Excluir</button>
+            <button type="button" class="button red" id="delete-${index}">Excluir</button>
         </td>
-    `
-    //acrescenta a linha a tabela 
-    document.querySelector('#tableClient>tbody').appendChild(novaLinha)
+    `;
+    document.querySelector('#tableClient>tbody').appendChild(novaLinha);
 }
 
-//CRUD - read
-const readCliente = (cliente) => getLocalStorage() //listar os clientes
-
-const atualizaTabela = () => {//método para atualizar a tabela
-    const dbCliente = readCliente()//mostrar os clientes
-    limparTabela()//fechar a tabela 
-    dbCliente.forEach(criarLinha)//
+// Função para atualizar a tabela na interface
+const atualizaTabela = () => {
+    const dbCliente = readCliente();
+    limparTabela();
+    dbCliente.forEach((cliente, index) => criarLinha(cliente, index));
 }
 
-//CRUD - update
-const updateCliente = (index, cliente) => { //cliente selecionado 
-    const dbCliente = readCliente()//chamada do método 
-    dbCliente[index] = cliente//chave e valor
-    setLocalStorage(dbCliente)//grava o valor atualizado
+// Função para atualizar os dados de um cliente
+const updateCliente = (index, cliente) => {
+    const dbCliente = readCliente();
+    dbCliente[index] = cliente;
+    setLocalStorage(dbCliente);
 }
 
-//CRUD - delete
+// Função para remover um cliente
 const deleteCliente = (index) => {
     const dbCliente = readCliente();
-    dbCliente.splice(index, 1); // Remove o cliente do array
-    setLocalStorage(dbCliente);//adicionar o cliente no localStorage
+    dbCliente.splice(index, 1);
+    setLocalStorage(dbCliente);
 }
 
+// Função para limpar a tabela na interface
 const limparTabela = () => {
-    const linhas = document.querySelectorAll('#tableClient>tbody tr')
-    linhas.forEach(linha => linha.parentNode.removeChild(linha))
+    const linhas = document.querySelectorAll('#tableClient>tbody tr');
+    linhas.forEach(linha => linha.parentNode.removeChild(linha));
 }
 
-atualizaTabela()//atualiza a tabela
-
-const fillFields = (cliente) => { //mostrar as propriedades do objeto no modal 
-    document.getElementById('nome').value = cliente.nome
-    document.getElementById('email').value = cliente.email
-    document.getElementById('celular').value = cliente.celular
-    document.getElementById('cidade').value = cliente.cidade
-    document.getElementById('nome').dataset.index = cliente.index
+// Função para preencher os campos do modal com os dados do cliente
+const fillFields = (cliente, index) => {
+    document.getElementById('nome').value = cliente.nome;
+    document.getElementById('email').value = cliente.email;
+    document.getElementById('celular').value = cliente.celular;
+    document.getElementById('cidade').value = cliente.cidade;
+    document.getElementById('nome').dataset.index = index; // Define o índice do cliente
+    document.querySelector(".modal-header>h2").textContent = `Editando ${cliente.nome}`; // Altera o título do modal
 }
 
+// Função para edição ou exclusão ao clicar nos botões da tabela
 const editDelete = (event) => {
     if (event.target.type === 'button') {
         const [action, index] = event.target.id.split('-');
 
         if (action === 'edit') {
-            const clienteIndex = parseInt(index); // Converta o índice para um número inteiro
-            editCliente(clienteIndex); // Chama a função de edição ao clicar em "Editar"
+            const clienteIndex = parseInt(index);
+            fillFields(readCliente()[clienteIndex], clienteIndex);
+            abrirModal();
         } else {
             const cliente = readCliente()[index];
-            const response = confirm(`Deseja realmente excluir o cliente ${cliente.nome}`);
+            const response = confirm(`Deseja realmente excluir o cliente ${cliente.nome}?`);
             if (response) {
                 deleteCliente(index);
-                atualizaTabela();//atualiza a tabela
+                atualizaTabela();
             }
         }
     }
 }
 
-const editCliente = (index) => {
-    const cliente = readCliente()[index];
-    cliente.index = index;
-    fillFields(cliente);
-    document.querySelector(".modal-header>h2").textContent = `Editando ${cliente.nome}`;
-    abrirModal()
-}
+// Eventos
 
-//eventos
-//abrir o modal
+// Abre o modal ao clicar no botão "Cadastrar Cliente"
 document.getElementById('cadastrarCliente')
     .addEventListener('click', () => {
-        clearFields(); // Limpa os campos do modal
-        abrirModal(); // Abre o modal
+        clearFields();
+        abrirModal();
     });
 
+// Fecha o modal ao clicar no botão de fechar
 document.getElementById('modalClose')
     .addEventListener('click', fecharModal);
 
+// Gerencia cliques nos botões de edição/exclusão na tabela
 document.querySelector('#tableClient>tbody')
     .addEventListener('click', editDelete);
 
-document.getElementById('salvar') // Adicione um ID ao botão "Salvar"
-    .addEventListener('click', saveCliente); // Chama a função saveCliente ao clicar em "Salvar"
+// Salva os dados do cliente ao clicar no botão "Salvar"
+document.getElementById('salvar')
+    .addEventListener('click', saveCliente);
 
+// Cancela a edição ou cadastro ao clicar no botão "Cancelar"
 document.getElementById('cancelar')
     .addEventListener('click', fecharModal);
 
+// Inicializa a tabela na interface
 atualizaTabela();
-
-
-
-
-
-
-
-
-
